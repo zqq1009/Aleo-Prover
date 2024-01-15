@@ -73,7 +73,10 @@ async fn main() {
     #[cfg(windows)]
     let _ = ansi_term::enable_ansi_support();
 
+    //调用Opt::parse()方法解析命令行参数，并将结果保存到opt变量中。
     let opt = Opt::parse();
+
+    //如果命令行参数中带有--new-address选项，则生成新的地址、私钥和公钥，并打印出来。
     if opt.new_address {
         let private_key = PrivateKey::<Testnet3>::new(&mut rand::thread_rng()).unwrap();
         let view_key = ViewKey::try_from(&private_key).unwrap();
@@ -124,9 +127,11 @@ async fn main() {
         std::process::exit(1);
     }
 
+    //获取命令行参数中的线程数和线程池大小。
     let threads = opt.threads.unwrap_or(num_cpus::get() as u16);
     let thread_pool_size = opt.thread_pool_size.unwrap_or(4);
 
+    //定义两个变量，用于存储CUDA相关的信息。
     let cuda: Option<Vec<i16>>;
     let cuda_jobs: Option<u8>;
     #[cfg(feature = "cuda")]
@@ -134,6 +139,7 @@ async fn main() {
         cuda = opt.cuda;
         cuda_jobs = opt.jobs;
     }
+    //根据是否启用CUDA特性，分别进行不同的处理。
     #[cfg(not(feature = "cuda"))]
     {
         cuda = None;
@@ -153,8 +159,10 @@ async fn main() {
     //     debug!("Node initialized");
     // }
 
+    //初始化客户端
     let client = Client::init(address, pool);
 
+    //初始化证明生成器，并将结果保存到prover变量中。
     let prover: Arc<Prover> = match Prover::init(threads, thread_pool_size, client.clone(), cuda, cuda_jobs).await {
         Ok(prover) => prover,
         Err(e) => {
@@ -164,8 +172,10 @@ async fn main() {
     };
     debug!("Prover initialized");
 
+    //启动证明生成器
     start(prover.sender(), client.clone());
 
+    //等待异步任务完成，这里是一个永久挂起的状态
     std::future::pending::<()>().await;
 }
 

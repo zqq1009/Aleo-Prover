@@ -24,15 +24,15 @@ use tracing::{debug, error, info, warn};
 use crate::prover::ProverEvent;
 
 pub struct Client {
-    pub address: Address<Testnet3>,
-    server: String,
-    sender: Arc<Sender<StratumMessage>>,
-    receiver: Arc<Mutex<Receiver<StratumMessage>>>,
+    pub address: Address<Testnet3>,             // 客户端地址
+    server: String,                             // 服务器地址
+    sender: Arc<Sender<StratumMessage>>,        // 发送消息的通道
+    receiver: Arc<Mutex<Receiver<StratumMessage>>>,   // 接收消息的通道
 }
 
 impl Client {
     pub fn init(address: Address<Testnet3>, server: String) -> Arc<Self> {
-        let (sender, receiver) = mpsc::channel(1024);
+        let (sender, receiver) = mpsc::channel(1024);   // 创建消息通道
         Arc::new(Self {
             address,
             server,
@@ -42,39 +42,39 @@ impl Client {
     }
 
     pub fn sender(&self) -> Arc<Sender<StratumMessage>> {
-        self.sender.clone()
+        self.sender.clone()   // 返回发送消息的通道
     }
 
     pub fn receiver(&self) -> Arc<Mutex<Receiver<StratumMessage>>> {
-        self.receiver.clone()
+        self.receiver.clone()   // 返回接收消息的通道
     }
 }
 
 pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
     task::spawn(async move {
-        let receiver = client.receiver();
-        let mut id = 1;
+        let receiver = client.receiver();   // 获取接收消息的通道
+        let mut id = 1;                     // 消息ID
         loop {
             info!("Connecting to server...");
-            match timeout(Duration::from_secs(5), TcpStream::connect(&client.server)).await {
+            match timeout(Duration::from_secs(5), TcpStream::connect(&client.server)).await {   // 连接服务器
                 Ok(socket) => match socket {
                     Ok(socket) => {
                         info!("Connected to {}", client.server);
-                        let mut framed = Framed::new(socket, StratumCodec::default());
-                        let mut pool_address: Option<String> = None;
+                        let mut framed = Framed::new(socket, StratumCodec::default());   // 创建帧化套接字
+                        let mut pool_address: Option<String> = None;   // 矿池地址
                         let handshake = StratumMessage::Subscribe(
-                            Id::Num(id),
-                            format!("HarukaProver/{}", env!("CARGO_PKG_VERSION")),
-                            "AleoStratum/2.0.0".to_string(),
+                            Id::Num(id),   // 订阅消息的ID
+                            format!("HarukaProver/{}", env!("CARGO_PKG_VERSION")),   // 客户端名称
+                            "AleoStratum/2.0.0".to_string(),   // 使用的协议版本
                             None,
                         );
                         id += 1;
-                        if let Err(e) = framed.send(handshake).await {
-                            error!("Error sending handshake: {}", e);
+                        if let Err(e) = framed.send(handshake).await {   // 发送握手消息给服务器
+                        error!("Error sending handshake: {}", e);
                         } else {
                             debug!("Sent handshake");
                         }
-                        match framed.next().await {
+                        match framed.next().await {   // 接收服务器的响应
                             None => {
                                 error!("Unexpected end of stream");
                                 sleep(Duration::from_secs(5)).await;
@@ -84,7 +84,7 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
                                 StratumMessage::Response(_, params, _) => {
                                     match params {
                                         Some(ResponseParams::Array(array)) => {
-                                            if let Some(address) = array.get(2) {
+                                            if let Some(address) = array.get(2) {   // 获取矿池地址
                                                 if let Some(address) = address.downcast_ref::<String>() {
                                                     pool_address = Some(address.clone());
                                                 } else {
@@ -121,6 +121,7 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
                                 continue;
                             }
                         }
+                        // 发送授权消息给服务器
                         let authorization =
                             StratumMessage::Authorize(Id::Num(id), client.address.to_string(), "".to_string());
                         id += 1;
@@ -129,6 +130,7 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
                         } else {
                             debug!("Sent authorization");
                         }
+                        // 接收服务器的响应
                         match framed.next().await {
                             None => {
                                 error!("Unexpected end of stream");
@@ -149,14 +151,14 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
                                 continue;
                             }
                         }
+                        // 获取接收消息的互斥锁
                         let receiver = &mut *receiver.lock().await;
                         loop {
                             tokio::select! {
                                 Some(message) = receiver.recv() => {
-                                    // let message = message.clone();
                                     let name = message.name();
                                     debug!("Sending {} to server", name);
-                                    if let Err(e) = framed.send(message).await {
+                                    if let Err(e) = framed.send(message).await {   // 发送消息给服务器
                                         error!("Error sending {}: {:?}", name, e);
                                     }
                                 }
@@ -170,6 +172,7 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
                                                         match params {
                                                             ResponseParams::Bool(result) => {
                                                                 if result {
+                                                                    // 将结果发送给证明者
                                                                     if let Err(e) = prover_sender.send(ProverEvent::Result(result, None)).await {
                                                                         error!("Error sending share result to prover: {}", e);
                                                                     } else {
@@ -186,6 +189,7 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
                                                     }
                                                     None => {
                                                         let error = error.unwrap();
+                                                        // 将错误信息发送给证明者
                                                         if let Err(e) = prover_sender.send(ProverEvent::Result(false, Some(error.message.to_string()))).await {
                                                             error!("Error sending share result to prover: {}", e);
                                                         } else {
@@ -195,18 +199,14 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
                                                 }
                                             }
                                             StratumMessage::Notify(job_id, epoch_challenge, address, _) => {
-                                                // info!("Notify job_id{}", job_id);
-
                                                 let job_id_bytes = hex::decode(job_id).expect("Failed to decode job_id");
-                                                // info!("job_id_bytes {}", job_id_bytes[0]);
-
                                                 if job_id_bytes.len() != 4 {
                                                     error!("Unexpected job_id length: {}", job_id_bytes.len());
                                                     continue;
                                                 }
                                                 let epoch = u32::from_le_bytes(job_id_bytes[0..4].try_into().unwrap());
-                                                // info!("epoch {}", epoch);
 
+                                                // 将新任务发送给证明者
                                                 if let Err(e) = prover_sender.send(ProverEvent::NewWork(epoch, epoch_challenge, address.unwrap_or_else(|| pool_address.clone().expect("No pool address defined")))).await {
                                                     error!("Error sending work to prover: {}", e);
                                                 } else {
@@ -214,6 +214,7 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
                                                 }
                                             }
                                             StratumMessage::SetTarget(difficulty_target) => {
+                                                // 将新的难度目标发送给证明者
                                                 if let Err(e) = prover_sender.send(ProverEvent::NewTarget(difficulty_target)).await {
                                                     error!("Error sending difficulty target to prover: {}", e);
                                                 } else {
@@ -250,3 +251,4 @@ pub fn start(prover_sender: Arc<Sender<ProverEvent>>, client: Arc<Client>) {
         }
     });
 }
+

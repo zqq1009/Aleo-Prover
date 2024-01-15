@@ -58,8 +58,8 @@ impl Prover {
         cuda_jobs: Option<u8>,            // CUDA 任务数（可选）
     ) -> Result<Arc<Self>> {
         let mut thread_pools: Vec<Arc<ThreadPool>> = Vec::new();  // 线程池数组
-        let pool_count;                                           // 线程池数量
-        let pool_threads;                                         // 每个线程池的线程数
+        let pool_count;                                      // 线程池数量
+        let pool_threads;                                    // 每个线程池的线程数
         if cuda.is_none() {                                       // 如果没有使用 CUDA
             if threads < thread_pool_size as u16 {                // 如果线程数小于线程池大小
                 pool_count = 1;                                   // 线程池数量为1
@@ -215,7 +215,7 @@ impl Prover {
                 // 将当前的总证明数量添加到 log 的末尾
                 log.push_back(proofs);
 
-                // 获取过去60秒、55秒、45秒、30秒和1分钟的证明数量
+                // 获取过去1，5，15，30，60分钟的证明数量
                 let m1 = *log.get(59).unwrap_or(&0);
                 let m5 = *log.get(55).unwrap_or(&0);
                 let m15 = *log.get(45).unwrap_or(&0);
