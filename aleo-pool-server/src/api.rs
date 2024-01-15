@@ -20,6 +20,7 @@ use crate::{Accounting, Server};
 
 pub fn start(port: u16, accounting: Arc<Accounting>, server: Arc<Server>) {
     task::spawn(async move {
+        // 定义不同的API路径，并与对应的处理函数绑定
         let current_round = path("current_round")
             .and(use_accounting(accounting.clone()))
             .then(current_round)
@@ -38,31 +39,39 @@ pub fn start(port: u16, accounting: Arc<Accounting>, server: Arc<Server>) {
             .then(admin_current_round)
             .boxed();
 
+        // 将所有的路径处理函数合并成一个路由
         let endpoints = current_round
             .or(address_stats)
             .or(pool_stats)
             .or(admin_current_round)
             .boxed();
 
+        // 定义HTTP请求方法，将路由和日志中间件绑定在一起
         let routes = get()
             .or(head())
             .unify()
             .and(endpoints)
             .with(warp::log("aleo_pool_server::api"));
         info!("Starting API server on port {}", port);
+
+        // 启动HTTP服务
         serve(routes).run(([0, 0, 0, 0], port)).await;
     });
 }
 
+// 根据提供的Accounting实例创建一个过滤器
 fn use_accounting(
     accounting: Arc<Accounting>,
 ) -> impl Filter<Extract = (Arc<Accounting>,), Error = Infallible> + Clone {
     warp::any().map(move || accounting.clone())
 }
+
+// 根据提供的Server实例创建一个过滤器
 fn use_server(server: Arc<Server>) -> impl Filter<Extract = (Arc<Server>,), Error = Infallible> + Clone {
     warp::any().map(move || server.clone())
 }
 
+// 处理/pool/stats路径的请求，返回当前池子的统计信息
 async fn pool_stats(server: Arc<Server>) -> Json {
     json(&json!({
         "online_addresses": server.online_addresses().await,
@@ -71,6 +80,7 @@ async fn pool_stats(server: Arc<Server>) -> Json {
     }))
 }
 
+// 处理/stats/{address}路径的请求，返回指定地址的统计信息
 async fn address_stats(address: String, server: Arc<Server>) -> impl Reply {
     if let Ok(address) = address.parse::<Address<Testnet3>>() {
         let speed = server.address_speed(address).await;
@@ -92,6 +102,7 @@ async fn address_stats(address: String, server: Arc<Server>) -> impl Reply {
     }
 }
 
+// 处理/current_round路径的请求，返回当前轮次的信息
 async fn current_round(accounting: Arc<Accounting>) -> Json {
     let data = accounting.current_round().await;
 
@@ -102,9 +113,10 @@ async fn current_round(accounting: Arc<Accounting>) -> Json {
     }))
 }
 
+// 处理/admin/current_round路径的请求，返回管理者权限下的当前轮次信息
 async fn admin_current_round(addr: Option<SocketAddr>, accounting: Arc<Accounting>) -> impl Reply {
     let addr = addr.unwrap();
-    if addr.ip().is_loopback() {
+    if addr.ip().is_loopback() {  // 只允许本地回环地址访问该接口
         let pplns = accounting.current_round().await;
         Ok(reply::with_status(json(&pplns), warp::http::StatusCode::OK))
     } else {
@@ -114,3 +126,4 @@ async fn admin_current_round(addr: Option<SocketAddr>, accounting: Arc<Accountin
         ))
     }
 }
+

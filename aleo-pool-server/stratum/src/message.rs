@@ -29,6 +29,7 @@ pub enum StratumMessage {
 }
 
 impl StratumMessage {
+    /// 获取消息类型的名称
     pub fn name(&self) -> &'static str {
         match self {
             StratumMessage::Subscribe(..) => "mining.subscribe",

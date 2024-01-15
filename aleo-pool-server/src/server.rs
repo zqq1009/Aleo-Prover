@@ -50,19 +50,20 @@ use rayon::prelude::*;
 // use crate::{connection::Connection, validator_peer::SnarkOSMessage, AccountingMessage};
 use crate::{connection::Connection, validator_dummy::SnarkOSMessage, AccountingMessage};
 
-struct ProverState {
-    peer_addr: SocketAddr,
-    address: Address<Testnet3>,
-    speed_2m: Speedometer,
-    speed_5m: Speedometer,
-    speed_15m: Speedometer,
-    speed_30m: Speedometer,
-    speed_1h: Speedometer,
-    current_target: u64,
-    next_target: u64,
+pub struct ProverState {
+    peer_addr: SocketAddr,          // 对等方地址
+    address: Address<Testnet3>,     // 地址
+    speed_2m: Speedometer,          // 2分钟速度计
+    speed_5m: Speedometer,          // 5分钟速度计
+    speed_15m: Speedometer,         // 15分钟速度计
+    speed_30m: Speedometer,         // 30分钟速度计
+    speed_1h: Speedometer,          // 1小时速度计
+    current_target: u64,            // 当前目标值
+    next_target: u64,               // 下一个目标值
 }
 
 impl ProverState {
+    // 创建新的ProverState实例
     pub fn new(peer_addr: SocketAddr, address: Address<Testnet3>) -> Self {
         Self {
             peer_addr,
@@ -77,6 +78,7 @@ impl ProverState {
         }
     }
 
+    // 添加份额，并更新速度和下一个目标值
     pub async fn add_share(&mut self, value: u64) {
         let now = Instant::now();
         self.speed_2m.event(value).await;
@@ -88,6 +90,7 @@ impl ProverState {
         debug!("add_share took {} us", now.elapsed().as_micros());
     }
 
+    // 获取下一个目标值，并更新当前目标值.如果下一个目标值不在当前目标值的0.9到1.1之间，则将下一个目标值赋值给当前目标值。
     pub async fn next_target(&mut self) -> u64 {
         if self.next_target < ((self.current_target as f64) * 0.9) as u64
             || self.next_target > ((self.current_target as f64) * 1.1) as u64
@@ -97,14 +100,17 @@ impl ProverState {
         self.current_target
     }
 
+    // 获取当前目标值
     pub fn current_target(&self) -> u64 {
         self.current_target
     }
 
+    // 获取地址
     pub fn address(&self) -> Address<Testnet3> {
         self.address
     }
 
+    // 获取速度，返回一个包含5分钟速度、15分钟速度、30分钟速度和1小时速度的Vec<f64>。
     // noinspection DuplicatedCode
     pub async fn speed(&mut self) -> Vec<f64> {
         vec![
@@ -116,6 +122,7 @@ impl ProverState {
     }
 }
 
+// 实现 Display trait 用于格式化输出 ProverState
 impl Display for ProverState {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let addr_str = self.address.to_string();
@@ -129,20 +136,22 @@ impl Display for ProverState {
     }
 }
 
+// 定义 PoolState 结构体
 struct PoolState {
-    speed_1m: Speedometer,
-    speed_5m: Speedometer,
-    speed_15m: Speedometer,
-    speed_30m: Speedometer,
-    speed_1h: Speedometer,
-    current_global_target_modifier: f64,
-    next_global_target_modifier: f64,
+    speed_1m: Speedometer,      // 1分钟速度计
+    speed_5m: Speedometer,      // 5分钟速度计
+    speed_15m: Speedometer,     // 15分钟速度计
+    speed_30m: Speedometer,     // 30分钟速度计
+    speed_1h: Speedometer,      // 1小时速度计
+    current_global_target_modifier: f64,// 当前全局目标修正器
+    next_global_target_modifier: f64,   // 下一个全局目标修正器
 }
 
 impl PoolState {
+    // 创建新的 PoolState 实例
     pub fn new() -> Self {
         Self {
-            speed_1m: Speedometer::init(Duration::from_secs(60)),
+            speed_1m: Speedometer::init(Duration::from_secs(60)),  // 初始化速度计
             speed_5m: Speedometer::init_with_cache(Duration::from_secs(60 * 5), Duration::from_secs(30)),
             speed_15m: Speedometer::init_with_cache(Duration::from_secs(60 * 15), Duration::from_secs(30)),
             speed_30m: Speedometer::init_with_cache(Duration::from_secs(60 * 30), Duration::from_secs(30)),
@@ -152,18 +161,20 @@ impl PoolState {
         }
     }
 
+    // 添加份额，并更新速度和下一个全局目标修正器
     pub async fn add_share(&mut self, value: u64) {
         let now = Instant::now();
-        self.speed_1m.event(1).await;
+        self.speed_1m.event(1).await;  // 更新速度计
         self.speed_5m.event(value).await;
         self.speed_15m.event(value).await;
         self.speed_30m.event(value).await;
         self.speed_1h.event(value).await;
-        self.next_global_target_modifier = (self.speed_1m.speed().await / 200.0).max(1f64);
+        self.next_global_target_modifier = (self.speed_1m.speed().await / 200.0).max(1f64);  // 计算下一个全局目标修正器
         // todo: make adjustable through admin api
         debug!("pool state add_share took {} us", now.elapsed().as_micros());
     }
 
+    // 获取下一个全局目标修正器，并更新当前全局目标修正器
     pub async fn next_global_target_modifier(&mut self) -> f64 {
         self.current_global_target_modifier = self.next_global_target_modifier;
         if self.current_global_target_modifier > 1.0 {
@@ -175,10 +186,12 @@ impl PoolState {
         self.current_global_target_modifier
     }
 
+    // 获取当前全局目标修正器
     pub fn current_global_target_modifier(&self) -> f64 {
         self.current_global_target_modifier
     }
 
+    // 获取速度
     // noinspection DuplicatedCode
     pub async fn speed(&mut self) -> Vec<f64> {
         vec![
@@ -193,9 +206,13 @@ impl PoolState {
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum ServerMessage {
+    //表示有新的 Prover 连接到服务器，并包含 TCP 流和对等方地址。
     ProverConnected(TcpStream, SocketAddr),
+    //表示 Prover 成功通过身份验证，并包含对等方地址、Prover 地址和发送回复消息的通道。
     ProverAuthenticated(SocketAddr, Address<Testnet3>, Sender<StratumMessage>),
+    //表示某个 Prover 断开了与服务器的连接，并包含对等方地址。
     ProverDisconnected(SocketAddr),
+    //表示 Prover 提交了一个份额，并包含份额 ID、对等方地址、起始位置、份额值、KZG 承诺和 KZG 证
     ProverSubmit(
         Id,
         SocketAddr,
@@ -204,6 +221,7 @@ pub enum ServerMessage {
         KZGCommitment<<Testnet3 as Environment>::PairingCurve>,
         KZGProof<<Testnet3 as Environment>::PairingCurve>,
     ),
+    //表示开始新的挑战周期，并包含挑战和时间戳。
     NewEpochChallenge(EpochChallenge<Testnet3>, u64),
     Exit,
 }
@@ -228,33 +246,37 @@ impl Display for ServerMessage {
 }
 
 pub struct Server {
-    sender: Sender<ServerMessage>,
+    sender: Sender<ServerMessage>,  // 用于向Server发送消息的通道
     // validator_sender: Arc<Sender<SnarkOSMessage>>,
-    validator_sender: Arc<Sender<String>>,
-    accounting_sender: Sender<AccountingMessage>,
-    pool_address: Address<Testnet3>,
-    connected_provers: RwLock<HashSet<SocketAddr>>,
-    authenticated_provers: Arc<RwLock<HashMap<SocketAddr, Sender<StratumMessage>>>>,
-    pool_state: Arc<RwLock<PoolState>>,
-    prover_states: Arc<RwLock<HashMap<SocketAddr, RwLock<ProverState>>>>,
-    prover_address_connections: Arc<RwLock<HashMap<Address<Testnet3>, HashSet<SocketAddr>>>>,
-    coinbase_puzzle: CoinbasePuzzle<Testnet3>,
-    latest_epoch_number: AtomicU32,
-    latest_epoch_challenge: Arc<RwLock<Option<EpochChallenge<Testnet3>>>>,
-    latest_proof_target: AtomicU64,
-    nonce_seen: Arc<FlurryHashSet<u64>>,
+    validator_sender: Arc<Sender<String>>, // 用于发送验证消息的通道
+    accounting_sender: Sender<AccountingMessage>,// 用于发送会计消息的通道
+    pool_address: Address<Testnet3>,// 指定服务器地址
+    connected_provers: RwLock<HashSet<SocketAddr>>,// 已连接的prover的Socket地址集合
+    authenticated_provers: Arc<RwLock<HashMap<SocketAddr, Sender<StratumMessage>>>>,// 已认证的prover的Socket地址和消息发送者的映射
+    pool_state: Arc<RwLock<PoolState>>,// 共享的池状态
+    prover_states: Arc<RwLock<HashMap<SocketAddr, RwLock<ProverState>>>>,// prover的Socket地址和其状态的映射
+    prover_address_connections: Arc<RwLock<HashMap<Address<Testnet3>, HashSet<SocketAddr>>>>, // prover地址和连接的Socket地址的映射
+    coinbase_puzzle: CoinbasePuzzle<Testnet3>,// coinbase难题
+    latest_epoch_number: AtomicU32,// 最新的epoch编号
+    latest_epoch_challenge: Arc<RwLock<Option<EpochChallenge<Testnet3>>>>, // 最新的epoch挑战
+    latest_proof_target: AtomicU64,// 最新的证明目标
+    nonce_seen: Arc<FlurryHashSet<u64>>,// 见过的nonce的集合
 }
 
 impl Server {
+    // 初始化Server实例
+// 初始化服务器实例
     pub async fn init(
-        port: u16,
-        address: Address<Testnet3>,
+        port: u16,  // 监听端口
+        address: Address<Testnet3>,  // 服务器地址
         //validator_sender: Arc<Sender<SnarkOSMessage>>,
-        validator_sender: Arc<Sender<String>>,
-        accounting_sender: Sender<AccountingMessage>,
+        validator_sender: Arc<Sender<String>>,  // 用于发送验证消息的通道
+        accounting_sender: Sender<AccountingMessage>,  // 用于发送会计消息的通道
     ) -> Arc<Server> {
+        // 创建消息通道，用于将消息发送给Server实例
         let (sender, mut receiver) = channel(1024);
 
+        // 监听指定端口
         let (_, listener) = match TcpListener::bind(format!("0.0.0.0:{}", port)).await {
             Ok(listener) => {
                 let local_ip = listener.local_addr().expect("Could not get local ip");
@@ -266,6 +288,7 @@ impl Server {
             }
         };
 
+        // 加载universal SRS，并创建CoinbasePuzzle实例
         info!("Initializing universal SRS");
         let srs = UniversalSRS::<Testnet3>::load().expect("Failed to load SRS");
         info!("Universal SRS initialized");
@@ -275,6 +298,7 @@ impl Server {
             .expect("Failed to load coinbase verifying key");
         info!("Coinbase verifying key initialized");
 
+        // 创建Server实例
         let server = Arc::new(Server {
             sender,
             validator_sender,
@@ -292,7 +316,7 @@ impl Server {
             nonce_seen: Arc::new(FlurryHashSet::with_capacity(10 << 20)),
         });
 
-        // clear nonce
+        // 定期清除nonce集合
         {
             let nonce = server.nonce_seen.clone();
             let mut ticker = tokio::time::interval(Duration::from_secs(60));
@@ -304,6 +328,7 @@ impl Server {
             });
         }
 
+        // 监听连接请求并处理
         let s = server.clone();
         task::spawn(async move {
             loop {
@@ -321,6 +346,7 @@ impl Server {
             }
         });
 
+        // 处理来自消息通道的消息
         let s = server.clone();
         task::spawn(async move {
             let server = s.clone();
@@ -332,8 +358,10 @@ impl Server {
             }
         });
 
+        // 返回Server实例
         server
     }
+
 
     fn seen_nonce(nonce_seen: Arc<FlurryHashSet<u64>>, nonce: u64) -> bool {
         !nonce_seen.pin().insert(nonce)
@@ -347,13 +375,19 @@ impl Server {
         self.sender.clone()
     }
 
+    // 处理接收到的消息
     pub async fn process_message(&self, msg: ServerMessage) {
+        // 处理接收到的消息
         trace!("Received message: {}", msg);
         match msg {
+            // 处理服务器消息中的"ProverConnected"情况
             ServerMessage::ProverConnected(stream, peer_addr) => {
+                // 在连接的验证者集合中插入验证者的地址
                 self.connected_provers.write().await.insert(peer_addr);
+                // 初始化连接
                 Connection::init(stream, peer_addr, self.sender.clone(), self.pool_address).await;
             }
+            // 处理服务器消息中的"ProverAuthenticated"情况
             ServerMessage::ProverAuthenticated(peer_addr, address, sender) => {
                 self.authenticated_provers
                     .write()
@@ -363,6 +397,7 @@ impl Server {
                     .write()
                     .await
                     .insert(peer_addr, ProverState::new(peer_addr, address).into());
+                // 更新验证者连接的地址集合
                 let mut pac_write = self.prover_address_connections.write().await;
                 if let Some(address) = pac_write.get_mut(&address) {
                     address.insert(peer_addr);
@@ -370,9 +405,11 @@ impl Server {
                     pac_write.insert(address, HashSet::from([peer_addr]));
                 }
                 drop(pac_write);
+                // 向验证者发送初始目标值
                 if let Err(e) = sender.send(StratumMessage::SetTarget(512)).await {
                     error!("Error sending initial target to prover: {}", e);
                 }
+                // 如果存在最新的时期挑战，则向验证者发送通知
                 if let Some(epoch_challenge) = self.latest_epoch_challenge.read().await.as_ref() {
                     let job_id = hex::encode(self.latest_epoch_number.load(Ordering::SeqCst).to_le_bytes());
                     if let Err(e) = sender
@@ -391,12 +428,15 @@ impl Server {
                     }
                 }
             }
+            // 处理服务器消息中的"ProverDisconnected"情况
             ServerMessage::ProverDisconnected(peer_addr) => {
+                // 移除验证者状态
                 let state = self.prover_states.write().await.remove(&peer_addr);
                 let address = match state {
                     Some(state) => Some(state.read().await.address()),
                     None => None,
                 };
+                // 从验证者连接的地址集合中移除对应的地址
                 if address.is_some() {
                     let mut pac_write = self.prover_address_connections.write().await;
                     let pac = pac_write.get_mut(&address.unwrap());
@@ -407,11 +447,16 @@ impl Server {
                         }
                     }
                 }
+                // 从连接的验证者集合中移除验证者
                 self.connected_provers.write().await.remove(&peer_addr);
+                // 从已验证的验证者集合中移除验证者
                 self.authenticated_provers.write().await.remove(&peer_addr);
             }
+            // 处理服务器消息中的"NewEpochChallenge"情况
             ServerMessage::NewEpochChallenge(epoch_challenge, proof_target) => {
+                // 获取最新的时期编号
                 let latest_epoch = self.latest_epoch_number.load(Ordering::SeqCst);
+                // 如果最新的时期编号小于接收到的时期挑战的编号，或者最新的时期编号为0且接收到的时期编号也为0，则更新最新的时期挑战
                 if latest_epoch < epoch_challenge.epoch_number()
                     || (epoch_challenge.epoch_number() == 0 && latest_epoch == 0)
                 {
@@ -424,11 +469,14 @@ impl Server {
                         .replace(epoch_challenge.clone());
                     self.clear_nonce();
                 }
+                // 如果接收到的时期编号小于最新的时期编号，则直接返回
                 if epoch_challenge.epoch_number() < latest_epoch {
                     return;
                 }
+                // 更新证明目标值
                 info!("Updating target to {}", proof_target);
                 self.latest_proof_target.store(proof_target, Ordering::SeqCst);
+                // 发送会计消息
                 if let Err(e) = self
                     .accounting_sender
                     .send(AccountingMessage::SetN(proof_target * 5))
@@ -436,10 +484,13 @@ impl Server {
                 {
                     error!("Error sending accounting message: {}", e);
                 }
+                // 获取全局难度调整器
                 let global_difficulty_modifier = self.pool_state.write().await.next_global_target_modifier().await;
                 debug!("Global difficulty modifier: {}", global_difficulty_modifier);
+                // 获取作业编号和时期挑战的十六进制表示
                 let job_id = hex::encode(epoch_challenge.epoch_number().to_le_bytes());
                 let epoch_challenge_hex = hex::encode(epoch_challenge.to_bytes_le().unwrap());
+                // 遍历已验证的验证者，给每个验证者发送目标值和时期挑战
                 for (peer_addr, sender) in self.authenticated_provers.read().await.clone().iter() {
                     let states = self.prover_states.read().await;
                     let prover_state = match states.get(peer_addr) {
@@ -458,11 +509,13 @@ impl Server {
                     if next_difficulty > proof_target {
                         next_difficulty = proof_target;
                     }
+                    // 发送目标值给验证者
                     if current_difficulty != next_difficulty {
                         if let Err(e) = sender.send(StratumMessage::SetTarget(next_difficulty)).await {
                             error!("Error sending difficulty target to prover {}: {}", prover_display, e);
                         }
                     }
+                    // 发送时期挑战给验证者
                     if let Err(e) = sender
                         .send(StratumMessage::Notify(
                             job_id.clone(),
@@ -476,7 +529,9 @@ impl Server {
                     }
                 }
             }
+            // 处理服务器消息中的"ProverSubmit"情况
             ServerMessage::ProverSubmit(id, peer_addr, epoch_number, nonce, commitment, proof) => {
+                // 复制所有需要用到的变量
                 let prover_states = self.prover_states.clone();
                 let pool_state = self.pool_state.clone();
                 let authenticated_provers = self.authenticated_provers.clone();
@@ -489,7 +544,9 @@ impl Server {
                 let global_proof_target = self.latest_proof_target.load(Ordering::SeqCst);
                 let pool_address = self.pool_address;
                 let coinbase_puzzle = self.coinbase_puzzle.clone();
+                // 开启一个异步任务来处理验证者提交的证明
                 task::spawn(async move {
+                    // 定义函数，用来发送结果消息给验证者
                     async fn send_result(
                         sender: &Sender<StratumMessage>,
                         id: Id,
@@ -515,8 +572,10 @@ impl Server {
                             error!("Error sending result to prover: {}", e);
                         }
                     }
+                    // 获取已验证的验证者集合和验证者状态集合
                     let provers = authenticated_provers.read().await;
                     let states = prover_states.read().await;
+                    // 获取验证者的发送者
                     let sender = match provers.get(&peer_addr) {
                         Some(sender) => sender,
                         None => {
@@ -524,6 +583,7 @@ impl Server {
                             return;
                         }
                     };
+                    // 获取验证者状态
                     let prover_state = match states.get(&peer_addr) {
                         Some(state) => state,
                         None => {
@@ -539,7 +599,9 @@ impl Server {
                             return;
                         }
                     };
+                    // 获取验证者的显示信息
                     let prover_display = format!("{}", prover_state.read().await);
+                    // 获取最新的时期挑战
                     let epoch_challenge = match latest_epoch_challenge.read().await.clone() {
                         Some(template) => template,
                         None => {
@@ -558,6 +620,7 @@ impl Server {
                             return;
                         }
                     };
+                    // 如果提交的时期编号与最新的时期编号不一致，则返回错误消息
                     if epoch_number != latest_epoch_number {
                         info!(
                             "Received stale solution from prover {} with epoch number: {} (expected {})",
@@ -570,9 +633,10 @@ impl Server {
                             Some(ErrorCode::from_code(21)),
                             Some("Stale solution".to_string()),
                         )
-                        .await;
+                            .await;
                         return;
                     }
+                    // 如果提交的nonce已经出现过，则返回错误消息
                     if Server::seen_nonce(seen_nonce, nonce) {
                         warn!("Received duplicate nonce from prover {}", prover_display);
                         send_result(
@@ -585,11 +649,13 @@ impl Server {
                         .await;
                         return;
                     }
+                    // 计算验证者的目标值
                     let mut prover_target =
                         (prover_state.read().await.current_target() as f64 * current_global_difficulty_modifier) as u64;
                     if prover_target > global_proof_target {
                         prover_target = global_proof_target;
                     }
+                    // 计算提交的证明的难度
                     let proof_difficulty = match &commitment.to_bytes_le() {
                         Ok(bytes) => u64::MAX / sha256d_to_u64(bytes),
                         Err(e) => {
@@ -605,6 +671,7 @@ impl Server {
                             return;
                         }
                     };
+                    // 如果证明的难度小于验证者的目标值，则返回错误消息
                     if proof_difficulty < prover_target {
                         warn!(
                             "Received solution with difficulty {} from prover {} (expected {})",
@@ -620,7 +687,7 @@ impl Server {
                         .await;
                         return;
                     }
-                    debug!("Verifying solution from prover {}", prover_display);
+                    // 构造验证者多项式
                     let polynomial = match prover_polynomial(&epoch_challenge, pool_address, nonce) {
                         Ok(polynomial) => polynomial,
                         Err(e) => {
@@ -639,6 +706,7 @@ impl Server {
                             return;
                         }
                     };
+                    // 对提交的证明进行哈希
                     let point = match hash_commitment(&commitment) {
                         Ok(point) => point,
                         Err(e) => {
@@ -654,6 +722,7 @@ impl Server {
                             return;
                         }
                     };
+                    // 验证提交的证明
                     let product_eval_at_point =
                         polynomial.evaluate(point) * epoch_challenge.epoch_polynomial().evaluate(point);
                     match KZG10::check(
@@ -679,9 +748,11 @@ impl Server {
                             return;
                         }
                     }
-
+                    // 更新验证者的份额
                     prover_state.write().await.add_share(prover_target).await;
+                    // 更新池的份额
                     pool_state.write().await.add_share(prover_target).await;
+                    // 发送会计消息
                     if let Err(e) = accounting_sender
                         .send(AccountingMessage::NewShare(
                             prover_state.read().await.address().to_string(),
@@ -691,6 +762,7 @@ impl Server {
                     {
                         error!("Failed to send accounting message: {}", e);
                     }
+                    // 发送成功结果给验证者
                     send_result(sender, id, true, None, None).await;
                     drop(provers);
                     drop(states);
@@ -699,6 +771,7 @@ impl Server {
                         prover_display, proof_difficulty
                     );
                     // TODO: testnet3 rewards
+                    // 发送未确认的解决方案给操作方
                     if proof_difficulty >= global_proof_target {
                         info!(
                             "Received unconfirmed solution from prover {} with difficulty {} (target {})",
@@ -737,19 +810,24 @@ impl Server {
         }
     }
 
+
     pub async fn online_provers(&self) -> u32 {
+        // 获取在线验证者数量
         self.authenticated_provers.read().await.len() as u32
     }
 
     pub async fn online_addresses(&self) -> u32 {
+        // 获取在线地址数量
         self.prover_address_connections.read().await.len() as u32
     }
 
     pub async fn pool_speed(&self) -> Vec<f64> {
+        // 获取所有在线验证者的速度
         self.pool_state.write().await.speed().await
     }
 
     pub async fn address_prover_count(&self, address: Address<Testnet3>) -> u32 {
+        // 获取指定地址上的在线验证者数量
         self.prover_address_connections
             .read()
             .await
@@ -759,6 +837,7 @@ impl Server {
     }
 
     pub async fn address_speed(&self, address: Address<Testnet3>) -> Vec<f64> {
+        // 获取指定地址上所有在线验证者的平均速度
         let mut speed = vec![0.0, 0.0, 0.0, 0.0];
         let prover_connections_lock = self.prover_address_connections.read().await;
         let prover_connections = prover_connections_lock.get(&address);
@@ -783,30 +862,35 @@ impl Server {
 }
 
 fn prover_polynomial(
-    epoch_challenge: &EpochChallenge<Testnet3>,
-    address: Address<Testnet3>,
-    nonce: u64,
+    epoch_challenge: &EpochChallenge<Testnet3>,  // 传入当前的 EpochChallenge 对象
+    address: Address<Testnet3>,  // 验证者的地址
+    nonce: u64,  // 随机数，用于生成验证者多项式
 ) -> anyhow::Result<DensePolynomial<<<Testnet3 as Environment>::PairingCurve as PairingEngine>::Fr>> {
+    // 返回值为 Result 类型，包含 DensePolynomial 对象和错误信息
     let input = {
-        let mut bytes = [0u8; 76];
-        bytes[..4].copy_from_slice(&epoch_challenge.epoch_number().to_bytes_le()?);
-        bytes[4..36].copy_from_slice(&epoch_challenge.epoch_block_hash().to_bytes_le()?);
-        bytes[36..68].copy_from_slice(&address.to_bytes_le()?);
-        bytes[68..].copy_from_slice(&nonce.to_le_bytes());
+        let mut bytes = [0u8; 76];  // 定义一个长度为 76 的字节数组
+        bytes[..4].copy_from_slice(&epoch_challenge.epoch_number().to_bytes_le()?);  // 将 EpochChallenge 的 epoch_number 转为小端序字节数组并复制到前四个字节
+        bytes[4..36].copy_from_slice(&epoch_challenge.epoch_block_hash().to_bytes_le()?);  // 将 EpochChallenge 的 epoch_block_hash 转为小端序字节数组并复制到第 4 到 35 个字节
+        bytes[36..68].copy_from_slice(&address.to_bytes_le()?);  // 将验证者地址转为小端序字节数组并复制到第 36 到 67 个字节
+        bytes[68..].copy_from_slice(&nonce.to_le_bytes());  // 将随机数转为小端序字节数组并复制到第 68 到 75 个字节
         bytes
     };
     Ok(hash_to_polynomial::<
         <<Testnet3 as Environment>::PairingCurve as PairingEngine>::Fr,
-    >(&input, epoch_challenge.degree()))
+    >(&input, epoch_challenge.degree()))  // 使用 hash_to_polynomial 函数生成验证者多项式
 }
 
+// 将输入哈希成一个系数向量，然后构造一个密度多项式并返回
 fn hash_to_polynomial<F: PrimeField>(input: &[u8], degree: u32) -> DensePolynomial<F> {
     // Hash the input into coefficients.
+    // 哈希输入得到系数向量
     let coefficients = hash_to_coefficients(input, degree + 1);
     // Construct the polynomial from the coefficients.
+    // 通过系数向量构造密度多项式
     DensePolynomial::from_coefficients_vec(coefficients)
 }
 
+// 将输入哈希成一个长度为 num_coefficients 的系数向量并返回
 fn hash_to_coefficients<F: PrimeField>(input: &[u8], num_coefficients: u32) -> Vec<F> {
     // Hash the input.
     let hash = blake2::Blake2s256::digest(input);
@@ -821,6 +905,7 @@ fn hash_to_coefficients<F: PrimeField>(input: &[u8], num_coefficients: u32) -> V
         .collect()
 }
 
+// 对 KZGCommitment 进行哈希，返回哈希值
 fn hash_commitment<E: PairingEngine>(commitment: &KZGCommitment<E>) -> anyhow::Result<E::Fr> {
     // Convert the commitment into bytes.
     let mut bytes = Vec::with_capacity(96);
