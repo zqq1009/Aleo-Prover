@@ -138,19 +138,26 @@ public:
                           InputOutputOrder order, Direction direction,
                           Type type)
     {
+        // 如果域大小为0，则直接返回成功状态
         if (lg_domain_size == 0)
             return RustError{cudaSuccess};
 
         try {
+            // 选择指定的 GPU 设备
             gpu.select();
 
+            // 计算域的实际大小
             size_t domain_size = (size_t)1 << lg_domain_size;
+            // 在 GPU 上分配内存并将输入数据复制到 GPU 内存中
             dev_ptr_t<fr_t> d_inout{domain_size, gpu};
             gpu.HtoD(&d_inout[0], inout, domain_size);
 
+            // 执行 NTT_internal 函数，在 GPU 上执行 NTT 操作
             NTT_internal(&d_inout[0], lg_domain_size, order, direction, type, gpu);
 
+            // 将结果从 GPU 内存中复制回主机内存
             gpu.DtoH(inout, &d_inout[0], domain_size);
+            // 同步 GPU，确保所有操作完成
             gpu.sync();
         } catch (const cuda_error& e) {
             gpu.sync();

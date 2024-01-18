@@ -145,26 +145,31 @@ pub fn polymul<T: std::clone::Clone>(
 
 /// Compute a multi-scalar multiplication
 pub fn msm<Affine, Projective, Scalar>(points: &[Affine], scalars: &[Scalar]) -> Result<Projective, cuda::Error> {
-    let npoints = scalars.len();
+    let npoints = scalars.len();  // 获取标量集合的长度，即点集合的数量
     if npoints > points.len() {
-        panic!("length mismatch {} points < {} scalars", npoints, scalars.len())
+        panic!("length mismatch {} points < {} scalars", npoints, scalars.len())  // 如果点集合的数量小于标量集合的数量，则抛出错误
     }
-
     //println!("rust msm points {}, scalars {}", points.len(),scalars.len());
 
+    // 创建一个未初始化的 Projective 结构体实例，用于存储计算结果
     #[allow(clippy::uninit_assumed_init)]
     let mut ret: Projective = unsafe { std::mem::MaybeUninit::uninit().assume_init() };
+
+    // 调用 FFI 函数 snarkvm_msm 进行变基 MSM 计算
     let err = unsafe {
         snarkvm_msm(
-            &mut ret as *mut _ as *mut c_void,
-            points as *const _ as *const c_void,
-            npoints,
-            scalars as *const _ as *const c_void,
-            std::mem::size_of::<Affine>(),
+            &mut ret as *mut _ as *mut c_void,    // 存储计算结果的指针
+            points as *const _ as *const c_void,   // 点集合的指针
+            npoints,                               // 点集合的数量
+            scalars as *const _ as *const c_void,  // 标量集合的指针
+            std::mem::size_of::<Affine>(),         // 每个点的大小（以字节为单位）
         )
     };
+    // 如果调用返回的错误码不为0，则返回错误信息
     if err.code != 0 {
         return Err(err);
     }
+
+    // 返回计算结果
     Ok(ret)
 }

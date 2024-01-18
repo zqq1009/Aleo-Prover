@@ -15,21 +15,15 @@
   <component name="ChangeListManager">
     <list default="true" id="4fb321df-c95e-439c-9da6-59cd2089d178" name="更改" comment="Added some comments">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/benches/seen_nonce.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/benches/seen_nonce.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/cache/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/cache/src/lib.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/speedometer/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/speedometer/src/lib.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/accounting.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/accounting.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/api.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/api.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/connection.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/connection.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/db.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/db.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/message.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/message.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/server.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/state_storage.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/state_storage.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/validator_dummy.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/validator_dummy.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/validator_peer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/validator_peer.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/stratum/src/codec.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/stratum/src/codec.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/stratum/src/message.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/stratum/src/message.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/cuda/cuda/snarkvm.cu" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/cuda/cuda/snarkvm.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/cuda/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/cuda/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/src/msm/variable_base/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/src/msm/variable_base/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/src/polycommit/kzg10/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/src/polycommit/kzg10/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snarkVM/ledger/coinbase/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/ledger/coinbase/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sppark-rust/sppark/ntt/ntt.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust/sppark/ntt/ntt.cuh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +41,9 @@
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -67,13 +64,15 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "D:/桌面/xiaoyu/aleo-pool-server/Cargo.toml",
+    "last_opened_file_path": "D:/桌面/xiaoyu-pc",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "settings.editor.selected.configurable": "ssh.settings",
+    "settings.editor.splitter.proportion": "0.36042404",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -89,7 +88,8 @@
       <option name="presentableId" value="Default" />
       <updated>1705049030441</updated>
       <workItem from="1705049038171" duration="840000" />
-      <workItem from="1705053680722" duration="22118000" />
+      <workItem from="1705053680722" duration="57594000" />
+      <workItem from="1705543358236" duration="250000" />
     </task>
     <task id="LOCAL-00001" summary="init project">
       <option name="closed" value="true" />
@@ -115,7 +115,15 @@
       <option name="project" value="LOCAL" />
       <updated>1705299686736</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added some comments">
+      <option name="closed" value="true" />
+      <created>1705314039521</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1705314039521</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -125,5 +133,9 @@
     <MESSAGE value="init project" />
     <MESSAGE value="Added some comments" />
     <option name="LAST_COMMIT_MESSAGE" value="Added some comments" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

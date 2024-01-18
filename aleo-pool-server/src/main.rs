@@ -161,7 +161,8 @@ async fn main() {
     std::future::pending::<()>().await;
 }
 
-
+// 这个异步函数用于处理信号。它从信号流中获取信号并根据不同的信号执行相应的操作，包括终止进程、保存状态并退出进程等。
+// 同时，它还与其他模块进行通信，向会计模块和服务器模块发送相应的消息。
 async fn handle_signals(mut signals: Signals, accounting: Arc<Accounting>, server_sender: Sender<ServerMessage>) {
     while let Some(signal) = signals.next().await {
         info!("Received signal: {:?}", signal);

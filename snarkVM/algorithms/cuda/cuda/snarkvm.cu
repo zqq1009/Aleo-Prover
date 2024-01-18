@@ -164,18 +164,21 @@ public:
             return RustError{cudaErrorMemoryAllocation};
         }
 
+        // 获取GPU资源
         resource_t* resource = resources.recv();
         int dev = resource->dev;
         auto& gpu = select_gpu(dev);
         int stream_idx = resource->stream;
         stream_t& stream = gpu[stream_idx];
 
+        // 指向设备内存，并将输入数据复制到设备内存中
         fr_t* h_mem = h_addr(dev, stream_idx);
         memcpy(h_mem, in, sizeof(fr_t) * domain_size);
 
         // Perform NTT
         RustError e = Polynomial::Base(gpu, h_mem, lg_domain_size,
                                        ntt_order, ntt_direction, ntt_type);
+        // 如果NTT操作失败，则释放资源并返回错误信息
         if (e.code != cudaSuccess) {
             resources.send(resource);
             return e;
@@ -262,26 +265,29 @@ public:
 
         // Divide the MSM among the GPUs
         for (size_t i = 0; i < gpu_count; i++) {
-            pool.spawn([&, i]() {
+            pool.spawn([&, i]() { // 使用 lambda 表达式创建一个 GPU 计算任务
                 int dev = i;
-                select_gpu(dev);
-                size_t start = i * bases_per_gpu;
-                size_t sz = std::min(bases_per_gpu, npoints - start);
+                select_gpu(dev); // 选择当前任务使用的 GPU 设备
+                size_t start = i * bases_per_gpu; // 计算当前 GPU 计算任务要处理的点集合的起始索引
+                size_t sz = std::min(bases_per_gpu, npoints - start); // 计算当前 GPU 计算任务要处理的点集合的数量，这里最多处理 bases_per_gpu 个点
 
                 // This is ugly, but we only know the size of the affine points in bytes
+                // 将点集合转换为 Affine 结构体数组
                 const affine_t* pts = (affine_t*)(&((uint8_t*)points)[start * ffi_affine_size]);
                 
                 RustError ret;
                 try {
+                    // 创建 MSM 计算器实例
                     msm_t<bucket_t, point_t, affine_t, scalar_t> msm(dev);
+                    // 调用 MSM 计算器进行计算
                     ret = msm.invoke(partial_sums[i], slice_t<affine_t>{pts, sz},
                                      &scalars[start], false, ffi_affine_size);
                 } catch (const cuda_error& e) {
-                    out->inf();
+                    out->inf(); // 如果发生错误，设置计算结果为无穷大
 #ifdef TAKE_RESPONSIBILITY_FOR_ERROR_MESSAGE
-                    ret = RustError{e.code(), e.what()};
+                    ret = RustError{e.code(), e.what()}; // 如果开启了错误信息记录，则记录错误信息和错误码
 #else
-                    ret = RustError{e.code()};
+                    ret = RustError{e.code()}; // 如果没有开启错误信息记录，则只记录错误码
 #endif
                 }
                 if (ret.code != cudaSuccess) {

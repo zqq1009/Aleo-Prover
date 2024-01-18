@@ -17,7 +17,10 @@ use warp::{
 };
 
 use crate::{Accounting, Server};
-
+// 函数用于启动一个 HTTP API 服务器。
+// 它定义了不同的 API 路径，并将每个路径与相应的处理函数绑定。
+// 然后，它将所有的路径处理函数合并成一个路由，并与日志中间件一起绑定在一起。
+// 最后，它通过指定的端口启动 HTTP 服务，监听来自客户端的请求。
 pub fn start(port: u16, accounting: Arc<Accounting>, server: Arc<Server>) {
     task::spawn(async move {
         // 定义不同的API路径，并与对应的处理函数绑定

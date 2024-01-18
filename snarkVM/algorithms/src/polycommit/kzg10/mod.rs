@@ -157,17 +157,19 @@ impl<E: PairingEngine> KZG10<E> {
 
     /// Outputs a commitment to `polynomial`.
     pub fn commit_lagrange(
-        lagrange_basis: &LagrangeBasis<E>,
-        evaluations: &[E::Fr],
-        hiding_bound: Option<usize>,
-        rng: Option<&mut dyn RngCore>,
+        lagrange_basis: &LagrangeBasis<E>,                     // 输入参数：拉格朗日基函数
+        evaluations: &[E::Fr],                                 // 输入参数：待计算承诺的评估值
+        hiding_bound: Option<usize>,                           // 输入参数：隐藏度数上限（可选）
+        rng: Option<&mut dyn RngCore>,                          // 输入参数：随机数生成器（可选）
     ) -> Result<(KZGCommitment<E>, KZGRandomness<E>), PCError> {
+        // 检查评估值的长度是否超过拉格朗日基函数的长度减一
         Self::check_degree_is_too_large(evaluations.len() - 1, lagrange_basis.size())?;
         assert_eq!(
             evaluations.len().checked_next_power_of_two().ok_or(PCError::LagrangeBasisSizeIsTooLarge)?,
             lagrange_basis.size()
-        );
+        ); // 确保评估值的长度是拉格朗日基函数长度的下一个二次幂
 
+        // 开始计时，记录承诺操作的耗时
         let commit_time = start_timer!(|| format!(
             "Committing to polynomial of degree {} with hiding_bound: {:?}",
             evaluations.len() - 1,
@@ -176,38 +178,42 @@ impl<E: PairingEngine> KZG10<E> {
 
         //let msmtime = start_timer("");
 
-        let evaluations = evaluations.iter().map(|e| e.to_bigint()).collect::<Vec<_>>();
-        let msm_time = start_timer!(|| "MSM to compute commitment to plaintext poly");
-        let mut commitment = VariableBase::msm(&lagrange_basis.lagrange_basis_at_beta_g, &evaluations);
-        end_timer!(msm_time);
+        let evaluations = evaluations.iter().map(|e| e.to_bigint()).collect::<Vec<_>>();  // 将评估值转换为大整数类型
+        let msm_time = start_timer!(|| "MSM to compute commitment to plaintext poly");  // 开始计时，记录计算明文多项式承诺的耗时
+        let mut commitment = VariableBase::msm(&lagrange_basis.lagrange_basis_at_beta_g, &evaluations);  // 使用 MSM 进行多项式承诺计算
+        end_timer!(msm_time);  // 结束计时，输出计算明文多项式承诺的耗时
 
         //format!("commitment, evaluations size {}", evaluations.len())
         //end_timer(&msmtime, format!("commitment,basis {}, evaluations {}", lagrange_basis.lagrange_basis_at_beta_g.len(), evaluations.len()).as_str());
 
+        // 创建一个空的随机性结构体
         let mut randomness = KZGRandomness::empty();
         if let Some(hiding_degree) = hiding_bound {
+            // 获取随机数生成器，如果不存在则返回错误
             let mut rng = rng.ok_or(PCError::MissingRng)?;
             let sample_random_poly_time =
+                // 开始计时，记录采样随机多项式的耗时
                 start_timer!(|| format!("Sampling a random polynomial of degree {hiding_degree}"));
 
+            // 生成随机性结构体
             randomness = KZGRandomness::rand(hiding_degree, false, &mut rng);
             Self::check_hiding_bound(
                 randomness.blinding_polynomial.degree(),
                 lagrange_basis.powers_of_beta_times_gamma_g.len(),
-            )?;
-            end_timer!(sample_random_poly_time);
+            )?; // 检查隐藏度数是否符合要求
+            end_timer!(sample_random_poly_time);// 结束计时，输出采样随机多项式的耗时
         }
 
-        let random_ints = convert_to_bigints(&randomness.blinding_polynomial.coeffs);
-        let msm_time = start_timer!(|| "MSM to compute commitment to random poly");
+        let random_ints = convert_to_bigints(&randomness.blinding_polynomial.coeffs);  // 将随机多项式的系数转换为大整数类型
+        let msm_time = start_timer!(|| "MSM to compute commitment to random poly");  // 开始计时，记录计算随机多项式承诺的耗时
         let random_commitment =
-            VariableBase::msm(&lagrange_basis.powers_of_beta_times_gamma_g, random_ints.as_slice()).to_affine();
-        end_timer!(msm_time);
+            VariableBase::msm(&lagrange_basis.powers_of_beta_times_gamma_g, random_ints.as_slice()).to_affine();  // 使用 MSM 计算随机多项式承诺
+        end_timer!(msm_time);  // 结束计时，输出计算随机多项式承诺的耗时
 
-        commitment.add_assign_mixed(&random_commitment);
+        commitment.add_assign_mixed(&random_commitment);  // 将随机多项式承诺添加到明文多项式承诺上
 
-        end_timer!(commit_time);
-        Ok((KZGCommitment(commitment.into()), randomness))
+        end_timer!(commit_time);  // 结束计时，输出承诺操作的总耗时
+        Ok((KZGCommitment(commitment.into()), randomness))  // 返回多项式承诺和随机性结构体
     }
 
     /// Compute witness polynomial.

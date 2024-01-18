@@ -73,6 +73,7 @@ impl<N: Network> CoinbasePuzzle<N> {
         Self::trim(&*universal_srs, PuzzleConfig { degree: max_degree })
     }
 
+    // 修剪SRS以满足承诺要求
     pub fn trim(srs: &SRS<N::PairingCurve>, config: PuzzleConfig) -> Result<Self> {
         // As above, we must support committing to the product of two degree `n` polynomials.
         // Thus, the SRS must support committing to a polynomial of degree `2n - 1`.
@@ -114,21 +115,25 @@ impl<N: Network> CoinbasePuzzle<N> {
         nonce: u64,
         minimum_proof_target: Option<u64>,
     ) -> Result<ProverSolution<N>> {
+        // let msmtime = start_timer("");
+
         // Retrieve the coinbase proving key.
-        //let msmtime = start_timer("");
         let pk = match self {
             Self::Prover(coinbase_proving_key) => coinbase_proving_key,
             Self::Verifier(_) => bail!("Cannot prove the coinbase puzzle with a verifier"),
         };
 
+        // 构造prover多项式
         let polynomial = Self::prover_polynomial(epoch_challenge, address, nonce)?;
         // println!("prove polynomial: {}", polynomial.coeffs().len());
-
         //end_timer(&msmtime, "polynomial");
+
         let product_evaluations = {
+            // 在多项式域上进行有序FFT（快速傅里叶变换）并生成多项式的评估结果
             let polynomial_evaluations = pk.product_domain.in_order_fft_with_pc(&polynomial, &pk.fft_precomputation);
 
             // println!("polynomial_evaluations: {}", polynomial_evaluations.len());
+            // 将多项式在评估域上进行乘法运算，得到产品的评估结果
             let product_evaluations = pk.product_domain.mul_polynomials_in_evaluation_domain(
                 polynomial_evaluations,
                 &epoch_challenge.epoch_polynomial_evaluations().evaluations,
@@ -137,6 +142,7 @@ impl<N: Network> CoinbasePuzzle<N> {
         };
         //end_timer(&msmtime, "fft");
 
+        // 使用KZG10生成Lagrange点的承诺和随机值
         let (commitment, _rand) = KZG10::commit_lagrange(&pk.lagrange_basis(), &product_evaluations, None, None)?;
         //end_timer(&msmtime, "commitment");
  
@@ -151,10 +157,14 @@ impl<N: Network> CoinbasePuzzle<N> {
             );
         }
 
+        // 哈希承诺点
         let point = hash_commitment(&commitment)?;
+
+        // 在承诺点处计算乘积多项式的评估结果
         let product_eval_at_point = polynomial.evaluate(point) * epoch_challenge.epoch_polynomial().evaluate(point);
         //end_timer(&msmtime, "product_eval_at_point");
 
+        // 使用KZG10生成Lagrange揭示的证明
         let proof = KZG10::open_lagrange(
             &pk.lagrange_basis(),
             pk.product_domain_elements(),
@@ -162,13 +172,16 @@ impl<N: Network> CoinbasePuzzle<N> {
             point,
             product_eval_at_point,
         )?;
+        // end_timer(&msmtime, "open_lagrange");
 
-        //end_timer(&msmtime, "open_lagrange");
+        // 确保生成的证明不是隐藏证明
         ensure!(!proof.is_hiding(), "The prover solution must contain a non-hiding proof");
 
+        // 使用KZG10验证生成的证明
         debug_assert!(KZG10::check(&pk.verifying_key, &commitment, point, product_eval_at_point, &proof)?);
-
         //end_timer(&msmtime, "KZG10::check");
+
+        // 返回prover解决方案
         Ok(ProverSolution::new(partial_solution, proof))
     }
 
@@ -227,19 +240,28 @@ impl<N: Network> CoinbasePuzzle<N> {
     }
 }
 
+// 这段代码是一个用于Coinbase谜题的实现，主要包含了两个函数。
+// product_domain 函数用于检查 epoch 和 prover 多项式的度数是否合理，并返回乘积多项式的评估域。
+// prover_polynomial 函数根据给定的 EpochChallenge、地址和 nonce 构造并返回 coinbase谜题 的 prover多项式。
+// 整体上，这段代码用于处理与Coinbase谜题相关的多项式计算和验证。
 impl<N: Network> CoinbasePuzzle<N> {
     /// Checks that the degree for the epoch and prover polynomial is within bounds,
     /// and returns the evaluation domain for the product polynomial.
     pub(crate) fn product_domain(degree: u32) -> Result<EvaluationDomain<N::Field>> {
         ensure!(degree != 0, "Degree cannot be zero");
+        // 计算多项式的系数数量
         let num_coefficients = degree.checked_add(1).ok_or_else(|| anyhow!("Degree is too large"))?;
+        // 计算乘积多项式的系数数量
         let product_num_coefficients = num_coefficients
             .checked_mul(2)
             .and_then(|t| t.checked_sub(1))
             .ok_or_else(|| anyhow!("Degree is too large"))?;
+        // 确保乘积多项式的系数数量满足要求
         assert_eq!(product_num_coefficients, 2 * degree + 1);
+        // 创建乘积多项式的评估域
         let product_domain =
             EvaluationDomain::new(product_num_coefficients.try_into()?).ok_or_else(|| anyhow!("Invalid degree"))?;
+        // 确保乘积多项式的评估域大小是2的幂次方
         assert_eq!(product_domain.size(), (product_num_coefficients as usize).checked_next_power_of_two().unwrap());
         Ok(product_domain)
     }
@@ -250,6 +272,7 @@ impl<N: Network> CoinbasePuzzle<N> {
         address: Address<N>,
         nonce: u64,
     ) -> Result<DensePolynomial<<N::PairingCurve as PairingEngine>::Fr>> {
+        // 构造输入数据
         let input = {
             let mut bytes = [0u8; 76];
             epoch_challenge.epoch_number().write_le(&mut bytes[..4])?;
@@ -259,6 +282,7 @@ impl<N: Network> CoinbasePuzzle<N> {
 
             bytes
         };
+        // 将输入数据哈希为多项式
         Ok(hash_to_polynomial::<<N::PairingCurve as PairingEngine>::Fr>(&input, epoch_challenge.degree()))
     }
 }

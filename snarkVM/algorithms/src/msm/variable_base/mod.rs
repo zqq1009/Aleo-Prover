@@ -26,29 +26,35 @@ use core::any::TypeId;
 pub struct VariableBase;
 
 impl VariableBase {
-    pub fn msm<G: AffineCurve>(bases: &[G], scalars: &[<G::ScalarField as PrimeField>::BigInteger]) -> G::Projective {
-        // For BLS12-377, we perform variable base MSM using a batched addition technique.
+    pub fn msm<G: AffineCurve>(
+        bases: &[G],                                            // 输入参数：点集合，作为批处理加法的基点
+        scalars: &[<G::ScalarField as PrimeField>::BigInteger], // 输入参数：标量集合，与基点对应的标量值
+    ) -> G::Projective {
+        // 对于 BLS12-377 曲线，我们使用批处理加法技术进行变基 MSM 计算。
         if TypeId::of::<G>() == TypeId::of::<G1Affine>() {
             #[cfg(all(feature = "cuda", target_arch = "x86_64"))]
-            // TODO SNP: where to set the threshold
+            // TODO SNP: 设置阈值
             if scalars.len() > 1024 {
                 let result = snarkvm_algorithms_cuda::msm::<G, G::Projective, <G::ScalarField as PrimeField>::BigInteger>(
                     bases, scalars,
-                );
+                );  // 使用 CUDA 实现的 MSM 算法进行计算
                 if let Ok(result) = result {
                     return result;
                 }
             }
-            batched::msm(bases, scalars)
+            batched::msm(bases, scalars)  // 使用批处理技术进行变基 MSM 计算
         }
-        // For all other curves, we perform variable base MSM using Pippenger's algorithm.
+        // 对于其他曲线，我们使用 Pippenger's 算法进行变基 MSM 计算。
         else {
-            standard::msm(bases, scalars)
+            standard::msm(bases, scalars)  // 使用 Pippenger's 算法进行变基 MSM 计算
         }
     }
 
     #[cfg(test)]
-    fn msm_naive<G: AffineCurve>(bases: &[G], scalars: &[<G::ScalarField as PrimeField>::BigInteger]) -> G::Projective {
+    fn msm_naive<G: AffineCurve>(
+        bases: &[G],                                            // 输入参数：点集合，作为批处理加法的基点
+        scalars: &[<G::ScalarField as PrimeField>::BigInteger], // 输入参数：标量集合，与基点对应的标量值
+    ) -> G::Projective {
         use itertools::Itertools;
         use snarkvm_utilities::BitIteratorBE;
 
@@ -57,8 +63,8 @@ impl VariableBase {
 
     #[cfg(test)]
     fn msm_naive_parallel<G: AffineCurve>(
-        bases: &[G],
-        scalars: &[<G::ScalarField as PrimeField>::BigInteger],
+        bases: &[G],                                            // 输入参数：点集合，作为批处理加法的基点
+        scalars: &[<G::ScalarField as PrimeField>::BigInteger], // 输入参数：标量集合，与基点对应的标量值
     ) -> G::Projective {
         use rayon::prelude::*;
         use snarkvm_utilities::BitIteratorBE;

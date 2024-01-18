@@ -227,6 +227,7 @@ pub enum ServerMessage {
 }
 
 impl ServerMessage {
+    //返回当前枚举变体的名称
     fn name(&self) -> &'static str {
         match self {
             ServerMessage::ProverConnected(..) => "ProverConnected",
@@ -240,6 +241,7 @@ impl ServerMessage {
 }
 
 impl Display for ServerMessage {
+    //将 ServerMessage 类型的值格式化为字符串
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name())
     }
@@ -265,7 +267,6 @@ pub struct Server {
 
 impl Server {
     // 初始化Server实例
-// 初始化服务器实例
     pub async fn init(
         port: u16,  // 监听端口
         address: Address<Testnet3>,  // 服务器地址
@@ -487,9 +488,11 @@ impl Server {
                 // 获取全局难度调整器
                 let global_difficulty_modifier = self.pool_state.write().await.next_global_target_modifier().await;
                 debug!("Global difficulty modifier: {}", global_difficulty_modifier);
+
                 // 获取作业编号和时期挑战的十六进制表示
                 let job_id = hex::encode(epoch_challenge.epoch_number().to_le_bytes());
                 let epoch_challenge_hex = hex::encode(epoch_challenge.to_bytes_le().unwrap());
+
                 // 遍历已验证的验证者，给每个验证者发送目标值和时期挑战
                 for (peer_addr, sender) in self.authenticated_provers.read().await.clone().iter() {
                     let states = self.prover_states.read().await;
@@ -861,6 +864,7 @@ impl Server {
     }
 }
 
+//根据给定的 EpochChallenge 对象、验证者地址和随机数，生成一个验证者多项式，并将其封装在 Result 类型中返回。
 fn prover_polynomial(
     epoch_challenge: &EpochChallenge<Testnet3>,  // 传入当前的 EpochChallenge 对象
     address: Address<Testnet3>,  // 验证者的地址
