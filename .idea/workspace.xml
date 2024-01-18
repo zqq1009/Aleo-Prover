@@ -15,15 +15,9 @@
   <component name="ChangeListManager">
     <list default="true" id="4fb321df-c95e-439c-9da6-59cd2089d178" name="更改" comment="Added some comments">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/api.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/api.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aleo-pool-server/src/server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/aleo-pool-server/src/server.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/cuda/cuda/snarkvm.cu" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/cuda/cuda/snarkvm.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/cuda/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/cuda/src/lib.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/src/msm/variable_base/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/src/msm/variable_base/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/src/polycommit/kzg10/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/src/polycommit/kzg10/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snarkVM/ledger/coinbase/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/ledger/coinbase/src/lib.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sppark-rust/sppark/ntt/ntt.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust/sppark/ntt/ntt.cuh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sppark-rust/sppark/msm/pippenger.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust/sppark/msm/pippenger.cuh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sppark-rust2/sppark/msm/batch_addition.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust2/sppark/msm/batch_addition.cuh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sppark-rust2/sppark/msm/pippenger.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust2/sppark/msm/pippenger.hpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,27 +49,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "D:/桌面/xiaoyu-pc",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
-    "settings.editor.selected.configurable": "ssh.settings",
-    "settings.editor.splitter.proportion": "0.36042404",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/桌面/xiaoyu&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;ssh.settings&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.36042404&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RustProjectSettings">
     <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
   </component>
@@ -89,7 +85,10 @@
       <updated>1705049030441</updated>
       <workItem from="1705049038171" duration="840000" />
       <workItem from="1705053680722" duration="57594000" />
-      <workItem from="1705543358236" duration="250000" />
+      <workItem from="1705543358236" duration="1996000" />
+      <workItem from="1705633177075" duration="14000" />
+      <workItem from="1705636801912" duration="2804000" />
+      <workItem from="1705651662320" duration="19025000" />
     </task>
     <task id="LOCAL-00001" summary="init project">
       <option name="closed" value="true" />
@@ -123,7 +122,23 @@
       <option name="project" value="LOCAL" />
       <updated>1705314039521</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Added some comments">
+      <option name="closed" value="true" />
+      <created>1705544421370</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1705544421370</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Added some comments">
+      <option name="closed" value="true" />
+      <created>1705544439412</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1705544439412</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
