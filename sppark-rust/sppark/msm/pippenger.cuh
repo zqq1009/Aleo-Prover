@@ -98,7 +98,7 @@ void breakdown(vec2d_t<uint32_t> digits, const scalar_t scalars[], size_t len,
     const uint32_t top_i = (scalar_t::nbits + 31) / 32 - 1;
     const uint32_t wmask = 0xffffffffU >> (31-wbits); // (1U << (wbits+1)) - 1;
 
-    / 获取当前线程对应的 scalar 对象
+    // 获取当前线程对应的 scalar 对象
     auto& scalar = xchange[tid/WARP_SZ](tid%WARP_SZ);
 
     #pragma unroll 1
