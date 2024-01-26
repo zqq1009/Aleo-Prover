@@ -208,8 +208,6 @@ void accumulate(bucket_h buckets_[], uint32_t nwins, uint32_t wbits,
     while (x < (nwins << wbits)) {
         y = x >> wbits;         // 计算y坐标
         x &= (1U << wbits) - 1; // 计算x坐标，将x值截取到wbits位
-        const uint32_t* h = &histogram[y][x];
-
         const uint32_t* h = &histogram[y][x]; // 获取对应的直方图元素
 
         uint32_t idx, len = h[0]; // 获取直方图元素中的索引和长度

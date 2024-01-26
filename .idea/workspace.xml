@@ -16,8 +16,6 @@
     <list default="true" id="4fb321df-c95e-439c-9da6-59cd2089d178" name="更改" comment="Added some comments">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sppark-rust/sppark/msm/pippenger.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust/sppark/msm/pippenger.cuh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sppark-rust2/sppark/msm/batch_addition.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust2/sppark/msm/batch_addition.cuh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sppark-rust2/sppark/msm/pippenger.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust2/sppark/msm/pippenger.hpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +86,7 @@
       <workItem from="1705543358236" duration="1996000" />
       <workItem from="1705633177075" duration="14000" />
       <workItem from="1705636801912" duration="2804000" />
-      <workItem from="1705651662320" duration="19025000" />
+      <workItem from="1705651662320" duration="19873000" />
     </task>
     <task id="LOCAL-00001" summary="init project">
       <option name="closed" value="true" />
@@ -138,11 +136,30 @@
       <option name="project" value="LOCAL" />
       <updated>1705544439412</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Added some comments">
+      <option name="closed" value="true" />
+      <created>1706249221342</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1706249221342</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="init project" />
