@@ -20,7 +20,6 @@
 # error "invalid BATCH_ADD_NSTREAMS"
 #endif
 
-
 template<class bucket_t, class affine_h,
         class bucket_h = class bucket_t::mem_t,
         class affine_t = class bucket_t::affine_t>
@@ -67,12 +66,13 @@ static void add(bucket_h ret[], const affine_h points[], uint32_t npoints,
             if (refmap && (i%32 == 0))
                 sign = __shfl_sync(0xffffffff, refs, i/32);
 
-            // 检查当前点是否需要处理
             if (word & 1) {
-                if (j++ == xid)  // 如果是当前线程需要处理的点
-                    off = i;      // 记录该点的索引
+                if (j++ == xid)
+                    off = (base + i) | (sign << 31);
             }
-            word >>= 1;  // 继续处理下一个点
+            word >>= 1;
+            sign >>= 1;
+        }
 
         if (i == chunk) {
             base = laneid == 0 ? atomicAdd(&current, 32*WARP_SZ) : 0;
@@ -165,12 +165,10 @@ void batch_addition(bucket_h ret[], const affine_h points[], size_t npoints,
     }
 #endif
 
-    // 将结果保存到 ret 中
     if (xid == 0)
         ret[tid/warp_sz] = acc;
 }
 
-// 对输入数组进行求和操作
 template<class bucket_t>
 bucket_t sum_up(const bucket_t inp[], size_t n)
 {
@@ -180,7 +178,6 @@ bucket_t sum_up(const bucket_t inp[], size_t n)
     return sum;
 }
 
-// 对输入向量进行求和操作
 template<class bucket_t>
 bucket_t sum_up(const std::vector<bucket_t>& inp)
 {   return sum_up(&inp[0], inp.size());   }

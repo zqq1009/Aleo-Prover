@@ -13,8 +13,7 @@
     <cargoProject FILE="$PROJECT_DIR$/aleo-pool-server/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4fb321df-c95e-439c-9da6-59cd2089d178" name="更改" comment="Added some comments">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="4fb321df-c95e-439c-9da6-59cd2089d178" name="更改" comment="rename">
       <change beforePath="$PROJECT_DIR$/sppark-rust/sppark/msm/batch_addition.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust/sppark/msm/batch_addition.cuh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -93,7 +92,7 @@
       <workItem from="1706332244597" duration="308000" />
       <workItem from="1706332704014" duration="220000" />
       <workItem from="1706333293641" duration="1078000" />
-      <workItem from="1706334698361" duration="88000" />
+      <workItem from="1706334698361" duration="354000" />
     </task>
     <task id="LOCAL-00001" summary="init project">
       <option name="closed" value="true" />
@@ -175,7 +174,23 @@
       <option name="project" value="LOCAL" />
       <updated>1706333559233</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Added some comments">
+      <option name="closed" value="true" />
+      <created>1706334808157</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1706334808157</updated>
+    </task>
+    <task id="LOCAL-00012" summary="rename">
+      <option name="closed" value="true" />
+      <created>1706334944997</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1706334944997</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -195,7 +210,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="init project" />
     <MESSAGE value="Added some comments" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added some comments" />
+    <MESSAGE value="rename" />
+    <option name="LAST_COMMIT_MESSAGE" value="rename" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
