@@ -13,11 +13,8 @@
     <cargoProject FILE="$PROJECT_DIR$/aleo-pool-server/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4fb321df-c95e-439c-9da6-59cd2089d178" name="更改" comment="init project">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/cuda/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/cuda/src/lib.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snarkVM/algorithms/src/msm/variable_base/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/snarkVM/algorithms/src/msm/variable_base/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sppark-rust/sppark/util/gpu_t.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust/sppark/util/gpu_t.cuh" afterDir="false" />
+    <list default="true" id="4fb321df-c95e-439c-9da6-59cd2089d178" name="更改" comment="rename">
+      <change beforePath="$PROJECT_DIR$/sppark-rust/sppark/msm/batch_addition.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/sppark-rust/sppark/msm/batch_addition.cuh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,9 +93,6 @@
       <workItem from="1706332704014" duration="220000" />
       <workItem from="1706333293641" duration="1078000" />
       <workItem from="1706334698361" duration="354000" />
-      <workItem from="1706357976951" duration="1351000" />
-      <workItem from="1706593897693" duration="4739000" />
-      <workItem from="1706609031359" duration="5772000" />
     </task>
     <task id="LOCAL-00001" summary="init project">
       <option name="closed" value="true" />
@@ -196,15 +190,7 @@
       <option name="project" value="LOCAL" />
       <updated>1706334944997</updated>
     </task>
-    <task id="LOCAL-00013" summary="init project">
-      <option name="closed" value="true" />
-      <created>1706358027343</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1706358027343</updated>
-    </task>
-    <option name="localTasksCounter" value="14" />
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -222,10 +208,10 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="init project" />
     <MESSAGE value="Added some comments" />
     <MESSAGE value="rename" />
-    <MESSAGE value="init project" />
-    <option name="LAST_COMMIT_MESSAGE" value="init project" />
+    <option name="LAST_COMMIT_MESSAGE" value="rename" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
